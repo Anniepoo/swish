@@ -143,14 +143,14 @@ accept_chat(Session, Options, WebSocket) :-
 
 accept_chat_(Session, Options, WebSocket) :-
 	create_chat_room,
-	(   reconnect_token(WSID, TokenOld, Options)
-	->  Reason = rejoined,
-	    Token = TokenOld
-	;   Reason = joined
+	(   reconnect_token(WSID, Token, Options),
+	    existing_visitor(WSID, Session, Token, TmpUser, UserData)
+	->  Reason = rejoined
+	;   must_succeed(create_visitor(WSID, Session, Token,
+					TmpUser, UserData, Options)),
+	    Reason = joined
 	),
 	hub_add(swish_chat, WebSocket, WSID),
-	must_succeed(create_visitor(WSID, Session, Token,
-				    TmpUser, UserData, Options)),
 	visitor_count(Visitors),
 	Msg = _{ type:welcome,
 		 uid:TmpUser,
@@ -243,6 +243,16 @@ wsid_visitor(WSID, Visitor) :-
 	visitor_session(WSID, Session).
 
 
+%!	existing_visitor(+WSID, +Session, +Token, -TmpUser, -UserData) is semidet.
+%
+%	True if we are dealing with  an   existing  visitor for which we
+%	lost the connection.
+
+existing_visitor(WSID, Session, Token, TmpUser, UserData) :-
+	visitor_session(WSID, Session, Token),
+	session_user(Session, TmpUser),
+	visitor_data(TmpUser, UserData), !.
+
 %%	create_visitor(+WSID, +Session, ?Token, -TmpUser, -UserData, +Options)
 %
 %	Create a new visitor  when  a   new  websocket  is  established.
@@ -255,11 +265,6 @@ wsid_visitor(WSID, Visitor) :-
 %	  - nick_name(NickName)
 %	  Nick name remembered in the browser for this user.
 
-create_visitor(WSID, Session, Token, TmpUser, UserData, _Options) :-
-	nonvar(Token),
-	visitor_session(WSID, Session, Token),
-	session_user(Session, TmpUser),
-	visitor_data(TmpUser, UserData), !.
 create_visitor(WSID, Session, Token, TmpUser, UserData, Options) :-
 	generate_key(Token),
 	assertz(visitor_session(WSID, Session, Token)),
