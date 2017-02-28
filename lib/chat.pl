@@ -143,8 +143,9 @@ accept_chat(Session, Options, WebSocket) :-
 
 accept_chat_(Session, Options, WebSocket) :-
 	create_chat_room,
-	(   reconnect_token(WSID, Token, Options)
-	->  Reason = rejoined
+	(   reconnect_token(WSID, TokenOld, Options)
+	->  Reason = rejoined,
+	    Token = TokenOld
 	;   Reason = joined
 	),
 	hub_add(swish_chat, WebSocket, WSID),
