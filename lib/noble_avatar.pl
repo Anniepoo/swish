@@ -122,7 +122,11 @@ create_avatar(PNG, Image) :-
 	file_name_extension(Base, png, PNG),
 	atom_codes(Base, Codes),
 	maplist(plus(0'a), IDs, Codes),
-	avatar_components(_Gender, IDs, Components),
+        (   [ -50 | _] = IDs
+        ->  [_ | CleanIDs] = IDs
+        ;   CleanIDs = IDs
+        ),
+	avatar_components(_Gender, CleanIDs, Components),
 	with_mutex(noble_avatar,
 		   create_avatar_sync(Components,
 				      noble_avatar, PNG, Image, _New)).
