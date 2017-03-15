@@ -103,5 +103,10 @@ require(["jquery", "config", "jswish"],
       $("body").swish(config.swish||{});
     });
   });
+  require(["jquery", "svgavatar"],
+     function($, svgavRef){
+     	var svgav = new svgavRef();
+     	svgav.init();
+  });
 });
 
