@@ -70,6 +70,7 @@
 :- use_module(chat).
 :- use_module(authenticate).
 :- use_module(pep).
+:- use_module(svg_avatar).
 
 /** <module> Provide the SWISH application as Prolog HTML component
 

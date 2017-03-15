@@ -56,11 +56,14 @@
 :- use_module(page).
 
 
-:-http_handler(root(avatardemo), svg_avatar_demo, []).
+:-http_handler(root(svgavatardemo), svg_avatar_demo, []).
 
 svg_avatar_demo(_Request) :-
     reply_html_page(swish(main),
-                    [title('Avatar Demo')],
+                    [title('Avatar Demo'),
+                     script([src('/bower_components/requirejs/require.js'),
+                             'data-main'('/js/swish')], [])
+                    ],
                     \demo_page
                    ).
 
@@ -106,3 +109,8 @@ more_av_box -->
                 'aria-expanded'=false],
                   img(href='/icons/moreavatars.svg')
              ))).
+
+
+test_form -->
+    html(p('I will be the test form')
+        ).
