@@ -42,7 +42,7 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "preferences", "form", "utils" ],
+define([ "jquery", "config", "preferences", "form", "utils", "svgavatar" ],
        function($, config, preferences, form, utils) {
 
 (function($) {
