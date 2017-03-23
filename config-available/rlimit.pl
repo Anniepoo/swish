@@ -33,10 +33,29 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(config_notifications, []).
-:- use_module(swish(lib/plugin/notify), []).
-:- use_module(config(user_profile)).
-:- use_module(config_enabled(email)).
+:- module(swish_config_rlimit, []).
+:- use_module(library(settings)).
 
-/** <module> Configure notifications
+:- setting(swish:data_limit, integer, 8_000,
+           "Enforce operating system address space limit (Mb)").
+
+/** <module> Configure resource limits
+
+This config file  limits  resource  usage   by  the  SWISH  server.  See
+rlimit/3. By default it limits   `data`, initialized data, uninitialized
+data, and heap usage. Almost all data usage of SWI-Prolog is heap usage.
 */
+
+:- if(exists_source(library(rlimit))).
+:- use_module(library(rlimit)).
+
+memlimit :-
+    setting(swish:data_limit, MbLimit),
+    Limit is MbLimit * 1024 * 1024,
+    catch(rlimit(data, _, Limit), E,
+          print_message(warning, E)).
+
+:- initialization memlimit.
+
+:- endif.
+

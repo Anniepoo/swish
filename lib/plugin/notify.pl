@@ -43,6 +43,7 @@
 :- use_module(library(lists)).
 :- use_module(library(readutil)).
 :- use_module(library(debug)).
+:- use_module(library(error)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_session)).
@@ -56,9 +57,6 @@
 :- use_module('../bootstrap').
 :- use_module('../storage').
 :- use_module('../chat').
-
-:- initialization
-    start_mail_scheduler.
 
 /** <module> SWISH notifications
 
@@ -112,7 +110,8 @@ queue_event(Profile, DocID, Action) :-
 queue_event(Profile, DocID, Action, Status) :-
     queue_file(Path),
     with_mutex(swish_notify,
-               queue_event_sync(Path, Profile, DocID, Action, Status)).
+               queue_event_sync(Path, Profile, DocID, Action, Status)),
+    start_mail_scheduler.
 
 queue_event_sync(Path, Profile, DocID, Action, Status) :-
     setup_call_cleanup(
@@ -165,10 +164,16 @@ update_status(retry(Count0, _), Status, retry(Count, Status)) :-
 %
 %   Start a thread that schedules queued mail handling.
 
+:- dynamic mail_scheduler_running/0.
+
+start_mail_scheduler :-
+    mail_scheduler_running,
+    !.
 start_mail_scheduler :-
     catch(thread_create(mail_main, _,
                         [ alias(mail_scheduler),
-                          detached(true)
+                          detached(true),
+                          at_exit(retractall(mail_scheduler_running))
                         ]),
           error(permission_error(create, thread, mail_scheduler), _),
           true).
@@ -178,6 +183,7 @@ start_mail_scheduler :-
 %   Infinite loop that schedules sending queued messages.
 
 mail_main :-
+    asserta(mail_scheduler_running),
     repeat,
     next_send_queue_time(T),
     get_time(Now),
@@ -335,6 +341,7 @@ short_notice(chat(Message)) -->
 file_name(Commit) -->
     { http_link_to_id(web_storage, path_postfix(Commit.name), HREF) },
     html(a(href(HREF), Commit.name)).
+
 
 		 /*******************************
 		 *  ADD NOTIFICATIONS TO CHAT	*
@@ -706,7 +713,10 @@ follow_file_options(Request) :-
                     ]),
     http_in_session(_SessionID),
     http_session_data(profile_id(ProfileID)), !,
-    profile_property(ProfileID, email_notifications(When)),
+    (   profile_property(ProfileID, email_notifications(When))
+    ->  true
+    ;   existence_error(profile_property, email_notifications)
+    ),
 
     (   follower(DocID, ProfileID, Follow)
     ->  true

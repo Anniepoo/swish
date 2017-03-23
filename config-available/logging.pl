@@ -33,10 +33,22 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(config_notifications, []).
-:- use_module(swish(lib/plugin/notify), []).
-:- use_module(config(user_profile)).
-:- use_module(config_enabled(email)).
+:- module(swish_config_logging, []).
+:- use_module(library(settings)).
+:- use_module(library(http/http_log)).
+:- use_module(lib/logging).
 
-/** <module> Configure notifications
+/** <module> Configure logging facilities
+
+The  settings  below  enable  extensive  logging  of  HTTP  and  pengine
+interaction. The log files are rotated every  week and logs are kept for
+6 months. The log files can  be   used  together  with lib/replay,pl and
+lib/replay_cm.pl  to  replay   Pengine    interaction   and   CodeMirror
+highlighting interaction.
 */
+
+:- set_setting_default(http:log_post_data, 1 000 000).
+:- set_setting_default(http:logfile, 'log/httpd.log').
+:- http_schedule_logrotate(weekly(sun, 05:05),
+                           [ keep_logs(26)
+                           ]).

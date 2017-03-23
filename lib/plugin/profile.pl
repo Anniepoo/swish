@@ -50,9 +50,11 @@
 :- use_module(library(broadcast)).
 
 :- use_module(swish(lib/config), []).
-:- use_module(swish(lib/login)).
+:- use_module(login).
+:- use_module(swish(lib/authenticate)).
 :- use_module(swish(lib/bootstrap)).
 :- use_module(swish(lib/form)).
+:- use_module(swish(lib/avatar)).
 
 
 /** <module> User profile configuration
@@ -151,11 +153,13 @@ swish_config:reply_logged_in(Options) :-
 %   True when ProfileID is the profile  identifier for the authenticated
 %   user.
 
-known_profile(Info, User) :-
-    IdProvider = Info.identity_provider,
+known_profile(Info, ProfileID) :-
+    IdProvider = Info.get(identity_provider),
     profile_default(IdProvider, Info, external_identity(ID)),
-    profile_property(User, external_identity(ID)),
-    profile_property(User, identity_provider(IdProvider)).
+    profile_property(ProfileID, external_identity(ID)),
+    profile_property(ProfileID, identity_provider(IdProvider)),
+    !.
+
 
 %!  associate_profile(+ProfileID) is det.
 %
@@ -165,6 +169,31 @@ known_profile(Info, User) :-
 associate_profile(ProfileID) :-
     http_session_assert(profile_id(ProfileID)),
     broadcast(swish(profile(ProfileID))).
+
+
+%!  init_session_profile
+%
+%   This deals with the case where  a   session  is opened, but login is
+%   continued because it is based on HTTP authentication.  If the server
+%   opens a session, we check for the current identity and associate the
+%   related profile.
+
+:- listen(http_session(begin(_SessionID, _Peer)),
+          init_session_profile).
+
+init_session_profile :-
+    http_current_request(Request),
+    authenticate(Request, Identity),
+    known_profile(Request, Identity, ProfileID),
+    associate_profile(ProfileID).
+
+known_profile(_Request, Identity, ProfileID) :-
+    known_profile(Identity, ProfileID),
+    !.
+known_profile(Request, Identity, ProfileID) :-
+    local == Identity.get(identity_provider),
+    swish_config:user_info(Request, local, UserInfo),
+    create_profile(UserInfo, local, ProfileID).
 
 
 %!  swish_config:reply_logged_out(+Options)
@@ -192,7 +221,8 @@ create_profile(UserInfo, IdProvider, User) :-
 user_profile_values(UserInfo, IdProvider, Defaults) :-
     findall(Default,
             profile_default(IdProvider, UserInfo, Default),
-            Defaults).
+            Defaults0),
+    add_gravatar(Defaults0, Defaults).
 
 profile_default(IdProvider, UserInfo, Default) :-
     (   nonvar(Default)
@@ -205,6 +235,21 @@ profile_default(IdProvider, UserInfo, Default) :-
           error(type_error(_,_),_),
           fail),
     Default =.. [Name,Value].
+profile_default(local, UserInfo, email_verified(true)) :-
+    _ = UserInfo.get(email).                    % trust our own user data
+
+add_gravatar(Defaults0, Defaults) :-
+    \+ memberchk(avatar(_), Defaults0),
+    memberchk(email(Email), Defaults0),
+    email_gravatar(Email, Avatar0),
+    valid_gravatar(Avatar0),
+    catch(profile_canonical_value(avatar, Avatar0, Avatar),
+          error(type_error(_,_),_),
+          fail),
+    !,
+    Defaults = [avatar(Avatar)|Defaults0].
+add_gravatar(Defaults, Defaults).
+
 
 %!  last_login(+User)//
 %

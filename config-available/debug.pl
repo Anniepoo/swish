@@ -33,10 +33,25 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(config_notifications, []).
-:- use_module(swish(lib/plugin/notify), []).
-:- use_module(config(user_profile)).
-:- use_module(config_enabled(email)).
+:- module(swish_config_debug, []).
+:- use_module(library(debug)).
 
-/** <module> Configure notifications
+/** <module> SWISH debugging
+
+This config enables several features to   simplify debugging the server,
+notably when the server is started in interactive move.
 */
+
+% Add time stamps to debug messages.
+:- debug_message_context(+time).
+
+% EDIT: Add your debug topics here. You   can find debug topics as calls
+% to debug/3 in the sources or using ?- list_debug_topics.
+
+% :- debug(http(request)).
+
+% EDIT: Enable this to get a stack trace  if there is an error inside an
+% HTTP handler. Note that the stack trace appears in the browser, Prolog
+% console and in the log file if logging is enabled.
+
+% :- use_module(library(http/http_error)).
