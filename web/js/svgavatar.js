@@ -37,6 +37,7 @@ define([], function () {
     var returnedModule = function () {
         this.init = function () {
         	   console.log('svgavatar init');
+        	 //  console.log($);
         }
     };
  

@@ -95,19 +95,19 @@ avatar_boxes(N) -->
     avatar_boxes(NN).
 
 avatar_box(Index) -->
-    html(li([class=['av-box', 'svg-box', Index], 'aria-hidden'=true],
-             a([class=['dropdown-toggle', avatar],
-                'data-toggle'=dropdown,
-                'aria-expanded'=false],
-                   img(href='/icons/avatar.svg', [])
+    html(li([class(['av-box', 'svg-box', Index]), 'aria-hidden'(true)],
+             a([class(['dropdown-toggle', avatar]),
+                'data-toggle'(dropdown),
+                'aria-expanded'(false)],
+                   img([src('/icons/avatar.svg'), height(64), width(64)], [])
                ))).
 
 more_av_box -->
-    html(li([class=['av-box', 'more-box'], 'aria-hidden'=true],
-            a([class=['dropdown-toggle', 'more-avatars'],
-               'data-toggle'=dropdown,
-                'aria-expanded'=false],
-                  img(href='/icons/moreavatars.svg')
+    html(li([class(['av-box', 'more-box']), 'aria-hidden'(true)],
+            a([class(['dropdown-toggle', 'more-avatars']),
+               'data-toggle'(dropdown),
+                'aria-expanded'(false)],
+                  img([src('/icons/moreavatar.svg'), height(64), width(64)])
              ))).
 
 
