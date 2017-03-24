@@ -32,7 +32,6 @@
     ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-
 /**
  * @fileOverview
  * <Description of the File>
@@ -41,49 +40,78 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  * @requires jquery
  */
+define(["jquery", "laconic"],
+    function() {
 
-define([ "jquery", "laconic" ],
-       function() {
+        (function($) {
+            var pluginName = 'svgavatar';
 
-(function($) {
-  var pluginName = 'svgavatar';
+            /** @lends $.fn.svgavatar */
+            var methods = {
+                _init: function(options) {
+                    return this.each(function() {
+                        var elem = $(this);
+                        var data = {}; /* private data */
 
-  /** @lends $.fn.svgavatar */
-  var methods = {
-    _init: function(options) {
-      return this.each(function() {
-	var elem = $(this);
-	var data = {};			/* private data */
 
-	<setup the widget>
+                        elem.data(pluginName, data); /* store with element */
+                    });
+                },
 
-	elem.data(pluginName, data);	/* store with element */
-      });
-    }
-  }; // methods
 
-  <private functions>
+                /**
+                 * @param {int} an integer from a range at least 0-2^20
+                 */                
+                setAVappearanceByUserID: function(ID) {
+                	  var h = this.hash(ID) & 0x1FFFFF;
+                	  this.selectAppearance('hair', h & 0x07);
+                	  this.setFill(
+                	       'hair',
+                	       ['#000000', '#CC4400', '#FFFF22', '#9f220B'][(h >> 3) & 0x03]);
+                	  this.selectAppearance('body', (h >> 5) & 0x03);
+                	  this.setFill('body',
+                	       ['#95D155', '#19A6BA', '#F03C9B', '#0B061F'][(h >> 7) & 0x03]);
+                	  this.selectAppearance('eyes', (h >> 9) & 0x07);
+                	  this.selectAppearance('nose', (h >> 11) & 0x03);
+                	  this.selectAppearance('mouth', (h >> 13) & 0x07);
+                	  
+                	  // TODO need more axes!
+                },
+                
+                selectAppearance: function(section, index) {
+                    this.find('#' + section + ' g').css('display', 'none');
+                    this.find('#' + section + ' g:nth-child(' + index + ')').css('display', 'inherit');
+                },
+                
+                setFill: function(section, color) {
+                	this.find('#' + section + ' [fill]').attr('fill', color)
+                	});
+                }
+            }; // methods
 
-  /**
-   * <Class description>
-   *
-   * @class svgavatar
-   * @tutorial jquery-doc
-   * @memberOf $.fn
-   * @param {String|Object} [method] Either a method name or the jQuery
-   * plugin initialization object.
-   * @param [...] Zero or more arguments passed to the jQuery `method`
-   */
+            <
+            private functions >
 
-  $.fn.svgavatar = function(method) {
-    if ( methods[method] ) {
-      return methods[method]
-	.apply(this, Array.prototype.slice.call(arguments, 1));
-    } else if ( typeof method === 'object' || !method ) {
-      return methods._init.apply(this, arguments);
-    } else {
-      $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
-    }
-  };
-}(jQuery));
-});
+                /**
+                 * <Class description>
+                 *
+                 * @class svgavatar
+                 * @tutorial jquery-doc
+                 * @memberOf $.fn
+                 * @param {String|Object} [method] Either a method name or the jQuery
+                 * plugin initialization object.
+                 * @param [...] Zero or more arguments passed to the jQuery `method`
+                 */
+
+                $.fn.svgavatar = function(method) {
+                    if (methods[method]) {
+                        return methods[method]
+                            .apply(this, Array.prototype.slice.call(arguments, 1));
+                    } else if (typeof method === 'object' || !method) {
+                        return methods._init.apply(this, arguments);
+                    } else {
+                        $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
+                    }
+                };
+        }(jQuery));
+    });

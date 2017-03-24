@@ -35,7 +35,7 @@
 
 :- module(svg_avatar,
           [
-              svg_avatar_inclusion//0
+%              svg_avatar_inclusion//0
           ]).
 
 /** <module>  SVG file mutation based avatar
@@ -75,7 +75,6 @@ demo_page -->
 		 /*******************************
 		 * Avatar Display               *
 		 *******************************/
-
 
 max_displayed_avs(8).
 
