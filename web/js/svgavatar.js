@@ -78,6 +78,12 @@ define(["jquery", "laconic"],
                 	  // TODO need more axes!
                 },
                 
+                /* internal use - probably not what you want */
+                
+                hash: function(ID) {
+                     return ID  & 0x1FFFFF;
+                },
+                
                 selectAppearance: function(section, index) {
                     this.find('#' + section + ' g').css('display', 'none');
                     this.find('#' + section + ' g:nth-child(' + index + ')').css('display', 'inherit');
@@ -85,12 +91,10 @@ define(["jquery", "laconic"],
                 
                 setFill: function(section, color) {
                 	this.find('#' + section + ' [fill]').attr('fill', color)
-                	});
-                }
+                	}
             }; // methods
 
-            <
-            private functions >
+           // private functions go here?
 
                 /**
                  * <Class description>

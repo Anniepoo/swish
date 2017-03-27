@@ -67,6 +67,7 @@
 :- use_module(config).
 :- use_module(avatar).
 :- use_module(noble_avatar).
+:- use_module(svg_avatar).
 :- use_module(chatstore).
 :- use_module(authenticate).
 :- use_module(pep).
