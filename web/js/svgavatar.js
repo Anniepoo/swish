@@ -45,6 +45,12 @@ define(["jquery", "laconic"],
 
         (function($) {
             var pluginName = 'svgavatar';
+                
+            /* internal use */
+            
+            function hash(ID) {
+                    return ID  & 0x1FFFFF;
+            };
 
             /** @lends $.fn.svgavatar */
             var methods = {
@@ -63,46 +69,36 @@ define(["jquery", "laconic"],
                  * @param {int} an integer from a range at least 0-2^20
                  */                
                 setAVappearanceByUserID: function(ID) {
-                	   var jesusjsistupid = this;
-                	   console.log(jesusjsistupid);
-                	  return $(this).each(function(index, elem) {
-                	  	console.log(elem);
-                	  	var taco = $(elem);
-                	  	console.log(taco);
+                	  return $(this).each(function() {
+                	  	var _this = $(this).svgavatar;
                 	  	
-	                	  var h = $(jesusjsistupid).hash(ID) & 0x1FFFFF;
-	                	  this.selectAppearance('hair', h & 0x07);
-	                	  this.setFill(
-	                	       'hair',
+	                	  var h = Math.floor(Math.random()*0x200000) // hash(ID) & 0x1FFFFF;
+                          console.log(h)
+	                	  _this('selectAppearance', 'hair', h & 0x07);
+	                	  _this('setFill', 'hair',
 	                	       ['#000000', '#CC4400', '#FFFF22', '#9f220B'][(h >> 3) & 0x03]);
-	                	  this.selectAppearance('body', (h >> 5) & 0x03);
-	                	  this.setFill('body',
+	                	  _this('selectAppearance', 'body', (h >> 5) & 0x03);
+	                	  _this('setFill', 'body',
 	                	       ['#95D155', '#19A6BA', '#F03C9B', '#0B061F'][(h >> 7) & 0x03]);
-	                	  this.selectAppearance('eyes', (h >> 9) & 0x07);
-	                	  this.selectAppearance('nose', (h >> 11) & 0x03);
-	                	  this.selectAppearance('mouth', (h >> 13) & 0x07);
+	                	  _this('selectAppearance', 'eyes', (h >> 9) & 0x07);
+	                	  _this('selectAppearance', 'nose', (h >> 11) & 0x03);
+	                	  _this('selectAppearance', 'mouth', (h >> 13) & 0x07);
                 	  });
                 	  // TODO need more axes!
                 },
                 
-                /* internal use - probably not what you want */
-                
-                hash: function(ID) {
-                     return ID  & 0x1FFFFF;
-                },
-                
                 selectAppearance: function(section, index) {
-                	  return this.each(function() {                	
-	                    this.find('#' + section + ' g').css('display', 'none');
-	                    this.find('#' + section + ' g:nth-child(' + index + ')').css('display', 'inherit');
+                	  return $(this).each(function() {                	
+	                    $(this).find('#' + section + ' g').css('display', 'none');
+	                    $(this).find('#' + section + ' g:nth-child(' + index + ')').css('display', 'inherit');
 	                 });
                 },
                 
                 setFill: function(section, color) {
-							return this.each(function() {                	
-								this.find('#' + section + ' [fill]').attr('fill', color);
-							});
-                	}
+                        return $(this).each(function() {                	
+                            $(this).find('#' + section + ' [fill]').attr('fill', color);
+                        });
+                }
             }; // methods
 
            // private functions go here?
