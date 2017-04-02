@@ -39,7 +39,7 @@
             record/2,                   % :Id, -Record
             data_property/2,            % :Id, ?Property
             data_row/2,                 % :Id, -Row
-            data_row/3,                 % :Id, +Range, -Row
+            data_row/4,                 % :Id, +Range, +Header, -Row
             data_dump/3,                % :Id, +Range, -Row
 
             data_flush/1,               % +Hash
@@ -69,7 +69,7 @@ maintained over a SWISH Pengine invocation.
     data_record(:, -),
     record(:, -),
     data_row(:, -),
-    data_row(:, +, -),
+    data_row(:, +, +, -),
     data_dump(:, +, -),
     data_property(:, -).
 
@@ -106,17 +106,8 @@ maintained over a SWISH Pengine invocation.
 
 %!  data_source(:Id, +Source) is det.
 %
-%   Make the CSV data in URL available   using  Id. Given this id, dicts
-%   with a tag Id are expanded to goals   on  the CSV data. In addition,
-%   record(Id, Record) gives a full data record   as a dict. Options are
-%   as defined by csv//2.  In addition, these options are processed:
-%
-%     - encoding(+Encoding)
-%       Set the encoding for processing the data.  Default is guessed
-%       from the URL header or `utf8` if there is no clue.
-%     - columns(+ColumnNames)
-%       Names for the columns. If not provided, the first row is assumed
-%       to hold the column names.
+%   Create a data source Id from   the  source definition Source. Source
+%   definitions are plugin files loaded from swish(data).
 
 data_source(M:Id, Source) :-
     variant_sha1(Source, Hash),
@@ -165,17 +156,19 @@ data_hash(_:Id, _) :-
     existence_error(dataset, Id).
 
 %!  data_row(:Id, -Row) is nondet.
-%!  data_row(:Id, +Range, -Row) is nondet.
+%!  data_row(:Id, +Range, +Header, -Row) is nondet.
 %
 %   True when Row is a term Id(Arg,   ...), where the first row contains
 %   the column names.
 %
-%   @see data_dump/3 to return a table
+%   @arg Header If `true`, include a header row.
+%   @see data_dump/3 to return a table and for a description of Range.
 
 data_row(Id, Row) :-
-    data_row(Id, all, Row).
+    data_row(Id, all, true, Row).
 
-data_row(M:Id, Range, Row) :-
+data_row(M:Id, Range, Header, Row) :-
+    must_be(boolean, Header),
     data_hash(M:Id, Hash),
     materialize(Hash),
     data_signature_db(Hash, Signature),
@@ -183,7 +176,8 @@ data_row(M:Id, Range, Row) :-
     same_length(ColNames, Vars),
     Goal =.. [Hash|Vars],
     Row  =.. [Id|Vars],
-    (   Vars = ColNames
+    (   Header == true,
+        Vars = ColNames
     ;   range(Range, M:Id, Goal)
     ).
 
@@ -220,7 +214,7 @@ range(Limit, Id, Goal) :-
 %       Count rows.
 
 data_dump(Id, Range, Table) :-
-    findall(Row, data_row(Id, Range, Row), Table).
+    findall(Row, data_row(Id, Range, true, Row), Table).
 
 
 %!  data_property(:Id, ?Property) is nondet.
@@ -415,12 +409,12 @@ data_flush(Hash) :-
     sandbox:safe_meta/2.
 
 sandbox:safe_meta(swish_data_source:data_source(Id,_), [])     :- safe_id(Id).
-sandbox:safe_meta(swish_data_source:data_record(Id, _), [])    :- safe_id(Id).
-sandbox:safe_meta(swish_data_source:record(Id, _), [])         :- safe_id(Id).
-sandbox:safe_meta(swish_data_source:data_row(Id, _), [])       :- safe_id(Id).
-sandbox:safe_meta(swish_data_source:data_row(Id, _, _), [])    :- safe_id(Id).
-sandbox:safe_meta(swish_data_source:data_dump(Id, _, _), [])   :- safe_id(Id).
-sandbox:safe_meta(swish_data_source:data_property(Id, _), [])  :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:data_record(Id,_), [])     :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:record(Id,_), [])          :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:data_row(Id,_), [])        :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:data_row(Id,_,_,_), [])    :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:data_dump(Id,_,_), [])     :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:data_property(Id,_), [])   :- safe_id(Id).
 
 safe_id(M:_) :- !, pengine_self(M).
 safe_id(_).

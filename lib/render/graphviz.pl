@@ -212,6 +212,7 @@ svg(SVG, _Options) -->
        updateSize()
        pan = svgPanZoom(svg[0], {
 			  // controlIconsEnabled: true
+			  minZoom: 0.1,
 			  maxZoom: 50
 			});
     });
@@ -251,6 +252,8 @@ graphviz_program(fdp).
 graphviz_program(sfdp).
 graphviz_program(twopi).
 graphviz_program(circo).
+graphviz_program(osage).
+graphviz_program(patchwork).
 
 graph_type(graph).
 graph_type(digraph).
