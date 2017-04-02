@@ -70,28 +70,31 @@ define(["jquery", "laconic"],
                  */                
                 setAVappearanceByUserID: function(ID) {
                 	  return $(this).each(function() {
-                	  	var _this = $(this).svgavatar;
+                	  	var _this = $(this);
                 	  	
 	                	  var h = Math.floor(Math.random()*0x200000) // hash(ID) & 0x1FFFFF;
                           console.log(h)
-	                	  _this('selectAppearance', 'hair', h & 0x07);
-	                	  _this('setFill', 'hair',
+	                	  _this.svgavatar('selectAppearance', 'hair', h & 0x07);
+	                	  _this.svgavatar('setFill', 'hair',
 	                	       ['#000000', '#CC4400', '#FFFF22', '#9f220B'][(h >> 3) & 0x03]);
-	                	  _this('selectAppearance', 'body', (h >> 5) & 0x03);
-	                	  _this('setFill', 'body',
+	                	  _this.svgavatar('selectAppearance', 'body', (h >> 5) & 0x03);
+	                	  _this.svgavatar('setFill', 'body',
 	                	       ['#95D155', '#19A6BA', '#F03C9B', '#0B061F'][(h >> 7) & 0x03]);
-	                	  _this('selectAppearance', 'eyes', (h >> 9) & 0x07);
-	                	  _this('selectAppearance', 'nose', (h >> 11) & 0x03);
-	                	  _this('selectAppearance', 'mouth', (h >> 13) & 0x07);
+	                	  _this.svgavatar('selectAppearance', 'eyes', (h >> 9) & 0x07);
+	                	  _this.svgavatar('selectAppearance', 'nose', (h >> 11) & 0x03);
+	                	  _this.svgavatar('selectAppearance', 'mouth', (h >> 13) & 0x07);
                 	  });
                 	  // TODO need more axes!
                 },
                 
                 selectAppearance: function(section, index) {
-                	  return $(this).each(function() {                	
+                	
+                	$(this).css("border", "1px solid red");
+                	console.log('in selectAppearance' + section + " " + index);
+ //               	  return $(this).each(function() {              	
 	                    $(this).find('#' + section + ' g').css('display', 'none');
 	                    $(this).find('#' + section + ' g:nth-child(' + index + ')').css('display', 'inherit');
-	                 });
+	       //          });
                 },
                 
                 setFill: function(section, color) {
